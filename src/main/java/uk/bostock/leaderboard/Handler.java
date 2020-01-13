@@ -18,6 +18,14 @@ public class Handler {
         return new Response<>(this.scores.getAll());
     }
 
+    public Response<List<Score>> getTopNScores(String n) {
+        if (!n.matches("\\d+")) {
+            return new Response<>(404);
+        }
+
+        return new Response<>(this.scores.getTopNScores(Integer.parseInt(n)));
+    }
+
     public Response<Void> save(final Request req) {
         RequestArgs args = gson.fromJson(req.body(), RequestArgs.class);
         if (args == null || args.score < 0) {
