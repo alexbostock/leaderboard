@@ -11,6 +11,12 @@ mvn verify
 mvn exec:java
 ```
 
+Test using Maven:
+
+```
+mvn test
+```
+
 ## Interface
 
 - `GET /scores`: returns all recorded scores.
