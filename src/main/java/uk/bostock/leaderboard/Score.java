@@ -1,6 +1,7 @@
 package uk.bostock.leaderboard;
 
 import java.util.Date;
+import java.util.Objects;
 
 public class Score {
     private final String nickname;
@@ -23,5 +24,23 @@ public class Score {
 
     public Date getTimestamp() {
         return this.timestamp;
+    }
+
+    @Override
+    public boolean equals(final Object o) {
+        if (o == this) return true;
+        if (!(o instanceof Score)) {
+            return false;
+        }
+        final Score score = (Score) o;
+
+        return this.nickname.equals(score.nickname)
+            && this.score == score.score
+            && this.timestamp.equals(score.timestamp);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(this.nickname, this.score, this.timestamp);
     }
 }
