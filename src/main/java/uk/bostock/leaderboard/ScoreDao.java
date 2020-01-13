@@ -5,6 +5,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 public class ScoreDao {
@@ -30,6 +31,21 @@ public class ScoreDao {
             .filter(score -> from == -1 || from <= score.getScore())
             .filter(score -> to == -1 || to > score.getScore())
             .collect(Collectors.toList());
+    }
+
+    public List<Score> getTopNScores(final int n) {
+        final TreeSet<Score> topN = new TreeSet<>((a, b) -> a.getScore() - b.getScore());
+
+        for (Score score : this.store) {
+            if (topN.size() < n) {
+                topN.add(score);
+            } else if (score.getScore() > topN.first().getScore()) {
+                topN.add(score);
+                topN.remove(topN.first());
+            }
+        }
+
+        return new ArrayList<>(topN);
     }
 
     public void save(final Score score) {

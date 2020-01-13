@@ -1,4 +1,4 @@
 -------------------------------------------------------------------------------
 Test set: uk.bostock.leaderboard.ScoreDaoTest
 -------------------------------------------------------------------------------
-Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.03 s - in uk.bostock.leaderboard.ScoreDaoTest
+Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.069 s - in uk.bostock.leaderboard.ScoreDaoTest

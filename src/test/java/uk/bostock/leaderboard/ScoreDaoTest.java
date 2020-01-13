@@ -27,4 +27,18 @@ public class ScoreDaoTest {
 
         assertEquals(scores.getAll(), scores.getByScoreRange(10, 101));
     }
+
+    @Test
+    public void ReturnsTopNScores() {
+        final ScoreDao scores = new ScoreDao();
+
+        for (int i = 0; i < 100; i++) {
+            scores.save(new Score(Integer.toString(i), i));
+        }
+
+        assertEquals(scores.getTopNScores(13).size(), 13);
+        System.out.println(scores.getTopNScores(4).get(0).getScore());
+        assertEquals(scores.getTopNScores(4).get(0).getScore(), 96);
+        assertEquals(scores.getTopNScores(2).get(1).getScore(), 99);
+    }
 }
