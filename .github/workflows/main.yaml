@@ -1,0 +1,15 @@
+name: CI
+on: [push]
+jobs:   
+
+  build:
+    runs-on: [ubuntu-18.04]
+    
+    name: Deploy over ssh
+    steps:
+    - uses: garygrossgarten/github-action-ssh@release
+      with:
+        command: sh update-leaderboard.sh
+        host: ${{ secrets.HOST }}
+        username: bossie
+        privateKey: ${{ secrets.PRIVATE_KEY}}
