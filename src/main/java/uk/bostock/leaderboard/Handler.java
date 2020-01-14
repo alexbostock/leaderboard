@@ -35,7 +35,6 @@ public class Handler {
         scores.save(new Score(args.nickname, args.score));
 
         return new Response<>(200);
-
     };
 }
 
