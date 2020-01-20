@@ -7,11 +7,16 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 public class ScoreDao {
     private final Connection db;
+    private DateFormat dateFormat;
 
     public ScoreDao() throws ClassNotFoundException, SQLException {
         this("database.db");
@@ -29,6 +34,8 @@ public class ScoreDao {
             + "score integer NOT NULL,"
             + "timestamp text NOT NULL"
         + ");");
+
+        this.dateFormat = new SimpleDateFormat("yyyy-MM-DD HH:mm:ss");
     }
 
     public List<Score> getAll() {
@@ -117,10 +124,22 @@ public class ScoreDao {
     private List<Score> parseResult(ResultSet rs) throws SQLException {
         List<Score> result = new ArrayList<>();
 
-            while (rs.next()) {
-                result.add(new Score(rs.getString("nickname"), rs.getInt("score"), rs.getDate("timestamp")));
-            }
+        while (rs.next()) {
+            String nickname = rs.getString("nickname");
+            int score = rs.getInt("score");
+            Date timestamp = this.parseTimestamp(rs.getString("timestamp"));
+            result.add(new Score(nickname, score, timestamp));
+        }
 
-            return result;
+        return result;
+    }
+
+    private Date parseTimestamp(String t) {
+        try {
+            return this.dateFormat.parse(t);
+        } catch (ParseException e) {
+            System.err.println("Corrupt database: failed to parse timestamp");
+            throw new IOError(e);
+        }
     }
 }
