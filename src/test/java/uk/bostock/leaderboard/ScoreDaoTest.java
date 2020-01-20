@@ -9,13 +9,17 @@ import org.junit.jupiter.api.Test;
 public class ScoreDaoTest {
     @Test
     public void storesAndReturnsScores() throws ClassNotFoundException, SQLException {
-        final ScoreDao scores = new ScoreDao();
+        final ScoreDao scores = new ScoreDao("test1.db");
+        scores.deleteAllRows();
+
         assertEquals(scores. getAll().size(), 0);
 
         scores.save(new Score("Alex", 100));
 
         assertEquals(scores.getAll().size(), 1);
-        assertEquals(scores.getAll().get(0), new Score("Alex", 100));
+        Score s = scores.getAll().get(0);
+        assertEquals(s.getNickname(), "Alex");
+        assertEquals(s.getScore(), 100);
 
         scores.save(new Score("Not Alex", 50));
         scores.save(new Score("Definitely Not Alex", 40));
@@ -32,15 +36,17 @@ public class ScoreDaoTest {
 
     @Test
     public void ReturnsTopNScores() throws ClassNotFoundException, SQLException {
-        final ScoreDao scores = new ScoreDao();
+        final ScoreDao scores = new ScoreDao("test2.db");
+        scores.deleteAllRows();
 
         for (int i = 0; i < 100; i++) {
             scores.save(new Score(Integer.toString(i), i));
         }
 
         assertEquals(scores.getTopNScores(13).size(), 13);
-        System.out.println(scores.getTopNScores(4).get(0).getScore());
-        assertEquals(scores.getTopNScores(4).get(0).getScore(), 96);
-        assertEquals(scores.getTopNScores(2).get(1).getScore(), 99);
+        assertEquals(scores.getTopNScores(4).get(3).getScore(), 96);
+        assertEquals(scores.getTopNScores(1).get(0).getScore(), 99);
+        assertEquals(scores.getTopNScores(2).get(0).getScore(), 99);
+        assertEquals(scores.getTopNScores(2).get(1).getScore(), 98);
     }
 }

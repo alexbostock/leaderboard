@@ -8,24 +8,19 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.stream.Collectors;
 
 public class ScoreDao {
-    private final Set<Score> store;
-
     private final Connection db;
 
     public ScoreDao() throws ClassNotFoundException, SQLException {
-        this.store = new HashSet<>();
+        this("database.db");
+    }
 
+    public ScoreDao(String dbFile) throws ClassNotFoundException, SQLException {
         Class.forName("org.sqlite.JDBC");
 
-        String url = "jdbc:sqlite:database.db";
+        String url = "jdbc:sqlite:" + dbFile;
         this.db = DriverManager.getConnection(url);
 
         Statement stmt = this.db.createStatement();
@@ -38,52 +33,66 @@ public class ScoreDao {
 
     public List<Score> getAll() {
         try (Statement stmt = this.db.createStatement()) {
-            ResultSet rs = stmt.executeQuery("SELECT * FROM score");
-
-            List<Score> result = new ArrayList<>();
-
-            while (rs.next()) {
-                result.add(new Score(rs.getString("nickname"), rs.getInt("score")));
-            }
-
-            return result;
+            return parseResult(stmt.executeQuery("SELECT * FROM score"));
         } catch  (SQLException e) {
             throw new IOError(e);
         }
     }
 
-    public List<Score> getByDateRange(final Date from, final Date to) {
-        return this.store.stream()
-            .filter(score -> from == null || from.before(score.getTimestamp()))
-            .filter(score -> to == null || to.after(score.getTimestamp()))
-            .collect(Collectors.toList());
+    public List<Score> getByScoreRange(final int from, final int to) {
+        if (from == -1 && to == -1) {
+            return getAll();
+        } else if (from == -1) {
+            return getByMaxScore(to);
+        } else if (to == -1) {
+            return getByMinScore(from);
+        }
+
+        String sql = "SELECT * FROM score WHERE ? <= score AND score < ?";
+
+        try (PreparedStatement pstmt = this.db.prepareStatement(sql)) {
+            pstmt.setInt(1, from);
+            pstmt.setInt(2, to);
+            return parseResult(pstmt.executeQuery());
+        } catch (SQLException e) {
+            throw new IOError(e);
+        }
     }
 
-    public List<Score> getByScoreRange(final int from, final int to) {
-        return this.store.stream()
-            .filter(score -> from == -1 || from <= score.getScore())
-            .filter(score -> to == -1 || to > score.getScore())
-            .collect(Collectors.toList());
+    private List<Score> getByMinScore(final int min) {
+        String sql = "SELECT * FROM score WHERE ? <= score";
+
+        try (PreparedStatement pstmt = this.db.prepareStatement(sql)) {
+            pstmt.setInt(1, min);
+            return parseResult(pstmt.executeQuery());
+        } catch (SQLException e) {
+            throw new IOError(e);
+        }
+    }
+
+    private List<Score> getByMaxScore(final int max) {
+        String sql = "SELECT * FROM score WHERE ? <= score";
+
+        try (PreparedStatement pstmt = this.db.prepareStatement(sql)) {
+            pstmt.setInt(1, max);
+            return parseResult(pstmt.executeQuery());
+        } catch (SQLException e) {
+            throw new IOError(e);
+        }
     }
 
     public List<Score> getTopNScores(final int n) {
-        final TreeSet<Score> topN = new TreeSet<>((a, b) -> a.getScore() - b.getScore());
+        String sql = "SELECT * FROM score ORDER BY score DESC LIMIT ?";
 
-        for (Score score : this.store) {
-            if (topN.size() < n) {
-                topN.add(score);
-            } else if (score.getScore() > topN.first().getScore()) {
-                topN.add(score);
-                topN.remove(topN.first());
-            }
+        try (PreparedStatement pstmt = this.db.prepareStatement(sql)) {
+            pstmt.setInt(1, n);
+            return parseResult(pstmt.executeQuery());
+        } catch (SQLException e) {
+            throw new IOError(e);
         }
-
-        return new ArrayList<>(topN);
     }
 
     public void save(final Score score) {
-        this.store.add(score);
-
         String sql = "INSERT INTO score(nickname, score, timestamp) VALUES(?, ?, datetime('now'));";
 
         try (PreparedStatement pstmt  = this.db.prepareStatement(sql)) {
@@ -93,5 +102,25 @@ public class ScoreDao {
         } catch (SQLException e) {
             throw new IOError(e);
         }
+    }
+
+    public void deleteAllRows() {
+        String sql = "DELETE from score";
+
+        try (Statement stmt = this.db.createStatement()) {
+            stmt.executeUpdate(sql);
+        } catch (SQLException e) {
+            throw new IOError(e);
+        }
+    }
+
+    private List<Score> parseResult(ResultSet rs) throws SQLException {
+        List<Score> result = new ArrayList<>();
+
+            while (rs.next()) {
+                result.add(new Score(rs.getString("nickname"), rs.getInt("score"), rs.getDate("timestamp")));
+            }
+
+            return result;
     }
 }

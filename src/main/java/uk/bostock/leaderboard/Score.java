@@ -9,9 +9,13 @@ public class Score {
     private final Date timestamp;
 
     public Score(final String nickname, final int score) {
+        this(nickname, score, new Date());
+    }
+
+    public Score(final String nickname, final int score, final Date time) {
         this.nickname = nickname;
         this.score = score;
-        this.timestamp = new Date();
+        this.timestamp = time;
     }
 
     public String getNickname() {
@@ -24,6 +28,11 @@ public class Score {
 
     public Date getTimestamp() {
         return this.timestamp;
+    }
+
+    @Override
+    public String toString() {
+        return "(" + nickname + ", " + score + ", " + timestamp + ")";
     }
 
     @Override
