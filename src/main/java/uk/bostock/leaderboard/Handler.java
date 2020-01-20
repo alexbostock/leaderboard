@@ -1,5 +1,7 @@
 package uk.bostock.leaderboard;
 
+import java.io.IOError;
+import java.sql.SQLException;
 import java.util.List;
 
 import com.google.gson.Gson;
@@ -10,8 +12,16 @@ public class Handler {
     private final Gson gson;
 
     public Handler() {
-        this.scores = new ScoreDao();
-        this.gson = new Gson();
+        try {
+            this.scores = new ScoreDao();
+            this.gson = new Gson();
+        } catch (SQLException e) {
+            System.err.println("Failed to load database.");
+            throw new IOError(e);
+        } catch (ClassNotFoundException e) {
+            System.err.println("Failed to load sqlite database driver.");
+            throw new IOError(e);
+        }
     }
 
     public Response<List<Score>> getAllScores() {

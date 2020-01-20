@@ -2,11 +2,13 @@ package uk.bostock.leaderboard;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import java.sql.SQLException;
+
 import org.junit.jupiter.api.Test;
 
 public class ScoreDaoTest {
     @Test
-    public void storesAndReturnsScores() {
+    public void storesAndReturnsScores() throws ClassNotFoundException, SQLException {
         final ScoreDao scores = new ScoreDao();
         assertEquals(scores. getAll().size(), 0);
 
@@ -29,7 +31,7 @@ public class ScoreDaoTest {
     }
 
     @Test
-    public void ReturnsTopNScores() {
+    public void ReturnsTopNScores() throws ClassNotFoundException, SQLException {
         final ScoreDao scores = new ScoreDao();
 
         for (int i = 0; i < 100; i++) {

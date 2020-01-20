@@ -1,5 +1,12 @@
 package uk.bostock.leaderboard;
 
+import java.io.IOError;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
@@ -11,12 +18,38 @@ import java.util.stream.Collectors;
 public class ScoreDao {
     private final Set<Score> store;
 
-    public ScoreDao() {
+    private final Connection db;
+
+    public ScoreDao() throws ClassNotFoundException, SQLException {
         this.store = new HashSet<>();
+
+        Class.forName("org.sqlite.JDBC");
+
+        String url = "jdbc:sqlite:database.db";
+        this.db = DriverManager.getConnection(url);
+
+        Statement stmt = this.db.createStatement();
+        stmt.execute("CREATE TABLE IF NOT EXISTS score ("
+            + "nickname text NOT NULL,"
+            + "score integer NOT NULL,"
+            + "timestamp text NOT NULL"
+        + ");");
     }
 
     public List<Score> getAll() {
-        return new ArrayList<>(this.store);
+        try (Statement stmt = this.db.createStatement()) {
+            ResultSet rs = stmt.executeQuery("SELECT * FROM score");
+
+            List<Score> result = new ArrayList<>();
+
+            while (rs.next()) {
+                result.add(new Score(rs.getString("nickname"), rs.getInt("score")));
+            }
+
+            return result;
+        } catch  (SQLException e) {
+            throw new IOError(e);
+        }
     }
 
     public List<Score> getByDateRange(final Date from, final Date to) {
@@ -50,5 +83,15 @@ public class ScoreDao {
 
     public void save(final Score score) {
         this.store.add(score);
+
+        String sql = "INSERT INTO score(nickname, score, timestamp) VALUES(?, ?, datetime('now'));";
+
+        try (PreparedStatement pstmt  = this.db.prepareStatement(sql)) {
+            pstmt.setString(1, score.getNickname());
+            pstmt.setInt(2, score.getScore());
+            pstmt.executeUpdate();
+        } catch (SQLException e) {
+            throw new IOError(e);
+        }
     }
 }
