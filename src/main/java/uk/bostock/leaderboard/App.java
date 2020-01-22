@@ -11,7 +11,7 @@ public class App {
 
         before((req, res) -> {
             res.type("application/json");
-            res.header("Access-Control-Allow-Origin", "*");
+            res.header("Access-Control-Allow-Origin", "https://tetris.alexbostock.co.uk");
         });
 
         get("/scores", (req, res) -> handler.getAllScores(), gson::toJson);
