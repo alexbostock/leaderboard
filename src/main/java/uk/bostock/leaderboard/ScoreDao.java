@@ -19,7 +19,7 @@ public class ScoreDao {
     private DateFormat dateFormat;
 
     public ScoreDao() throws ClassNotFoundException, SQLException {
-        this("database.db");
+        this("/var/db/leaderboard/database.db");
     }
 
     public ScoreDao(String dbFile) throws ClassNotFoundException, SQLException {
